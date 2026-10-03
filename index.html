@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TB Stack Calculator</title>
+<style>
+:root{
+  --bg:#0b0f14;--panel:#121821;--panel2:#18212c;--line:#263241;
+  --text:#edf2f7;--muted:#95a3b3;--accent:#67e8f9;--accent2:#a78bfa;
+  --good:#4ade80;--warn:#fbbf24;--bad:#fb7185;
+}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#172231 0,#0b0f14 45%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.app{max-width:1280px;margin:auto;padding:24px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:20px}
+h1{margin:0;font-size:clamp(26px,4vw,42px);letter-spacing:-1px}.sub{color:var(--muted);margin-top:6px}
+.badge{border:1px solid #334155;background:#111923;padding:8px 12px;border-radius:999px;color:var(--accent);font-size:12px;font-weight:700}
+.tabs{display:flex;gap:8px;margin-bottom:16px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:11px 16px;border-radius:10px;cursor:pointer;font-weight:700}.tab.active{background:#172b38;color:var(--accent);border-color:#31566a}
+.grid{display:grid;grid-template-columns:330px 1fr;gap:16px}.panel{background:rgba(18,24,33,.94);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 12px 40px #0004}
+h2{font-size:16px;margin:0 0 14px}.section{margin-bottom:18px}.field{margin:11px 0}.field label{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:6px}.field input,.field select{width:100%;padding:11px 12px;background:#0d131b;border:1px solid #2b3746;color:var(--text);border-radius:9px;font-size:14px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.g7-option.hidden{display:none}.check{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #202a36;color:#cbd5e1;font-size:13px}.check input{width:18px;height:18px;accent-color:#67e8f9}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px}.stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.stat .v{font-size:22px;font-weight:800;margin-top:5px}.progress{height:8px;background:#0b1118;border-radius:99px;overflow:hidden;margin-top:10px}.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}.tablewrap table{border-collapse:collapse;width:auto;min-width:0;table-layout:auto;white-space:nowrap}.tablewrap th,.tablewrap td{padding:6px 10px;border-bottom:1px solid #202a36;text-align:left;font-size:15px}.tablewrap th:first-child,.tablewrap td:first-child{min-width:185px}.tablewrap th:last-child,.tablewrap td:last-child{width:125px}.tablewrap th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;background:#101720;position:sticky;top:0}.num{text-align:right!important;font-variant-numeric:tabular-nums}.type{color:var(--muted)}.group{color:var(--accent);font-weight:700}.empty{color:var(--muted);padding:24px;text-align:center}
+.note{font-size:12px;color:var(--muted);line-height:1.55}.instructions{margin:0 0 16px;padding:14px 16px;border:1px solid #3c7180;border-radius:12px;background:#10232b;color:#e6fbff;font-weight:800;font-size:15px;line-height:1.45;box-shadow:0 8px 24px #0003}.buttons{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#0e151e;color:#dbeafe;padding:9px 12px;border-radius:9px;cursor:pointer}.btn:hover{border-color:#4b637c}.calculate{width:100%;margin-top:4px;background:linear-gradient(90deg,#12313b,#29234a);border-color:#3c7180;color:#67e8f9;font-weight:800;padding:12px}.calculate:active{transform:translateY(1px)}.warning{color:var(--warn)}.ok{color:var(--good)}.over{color:var(--bad)}
+footer{margin-top:16px;color:#657487;font-size:11px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.app{padding:14px}header{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div><h1>TB Stack Calculator</h1><div class="sub">Web version of TB_stack.xlsx — interactive stacking and Leadership calculation.</div></div>
+  <div class="badge">Excel logic rebuilt</div>
+</header>
+
+<div class="instructions">Choose either G9/M9/S8 or T9. Then choose number of Hero/Captains. Then input your Max leadership.</div>
+
+<div class="tabs">
+  <button class="tab active" data-model="g9">G9 / M9 / S8</button>
+  <button class="tab" data-model="t9">T9</button>
+</div>
+
+<div class="grid">
+<aside class="panel">
+  <div class="section">
+    <h2>Profile</h2>
+    <div class="field"><label>Hero / Captain setup</label><select id="profile"></select></div>
+  </div>
+
+  <div class="section">
+    <h2>Input</h2>
+    <div class="field"><label>Leadership max <span id="maxHint"></span></label><input id="maxLeadership" type="number" min="0" step="1"></div>
+  </div>
+
+  <div class="section">
+    <h2>Options</h2>
+    <div class="check"><span>E9 Catapult</span><input id="e9" type="checkbox" checked></div>
+    <div class="check"><span>E8 Catapult</span><input id="e8" type="checkbox"></div>
+    <div class="check g7-option"><span>G7 Flying</span><input id="g7f" type="checkbox"></div>
+    <div class="check g7-option"><span>G7 Melee</span><input id="g7m" type="checkbox"></div>
+  </div>
+
+  <div class="section">
+    <h2>Settings (not recommended to be changed)</h2>
+    <div class="row2">
+      <div class="field"><label>Troop Factor</label><input id="troop" type="number" step="0.01"></div>
+      <div class="field"><label>Beast Factor</label><input id="beast" type="number" step="0.01"></div>
+      <div class="field"><label>Specialist Factor</label><input id="spec" type="number" step="0.01"></div>
+    </div>
+    <div class="buttons"><button class="btn" id="resetFactors">Reset settings</button><button class="btn" id="resetAll">Reset all</button></div>
+  </div>
+
+  <div class="section" id="aydaeSection">
+    <h2>Aydae/Skadi compensation factor (need indivudal adjustments)</h2>
+    <div class="field"><label>Aydae/Skadi compensation factor</label><input id="aydae" type="number" min="0" step="0.01"></div>
+  </div>
+
+  <div class="section">
+    <h2>Catapults</h2>
+    <div class="field"><label>Catapult factor 1 Hero or Captain</label><input id="cat1" type="number" step="0.01"></div>
+    <div class="field"><label>Catapult factor 3 Captains</label><input id="cat3" type="number" step="0.01"></div>
+    <div class="field"><label>Catapult factor 1 Hero and 3 Captains</label><input id="cat4" type="number" step="0.01"></div>
+  </div>
+
+  <div class="note">
+    The app automatically searches for the highest G9 Ranged value whose Leadership Used stays within Leadership Max.
+  </div>
+</aside>
+
+<main>
+  <div class="stats">
+    <div class="stat"><div class="k">Leadership max</div><div class="v" id="statMax">—</div></div>
+    <div class="stat"><div class="k">Leadership used</div><div class="v" id="statUsed">—</div><div class="progress"><i id="bar"></i></div></div>
+    <div class="stat"><div class="k">Remaining</div><div class="v" id="statLeft">—</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Number of troops</h2>
+    <div class="tablewrap"><table><thead><tr><th>Troop / Type</th><th class="num">Number of troops</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+
+</main>
+</div>
+<footer>Based on TB_stack.xlsx. The web app is standalone and requires no server.</footer>
+</div>
+
+<script>
+const models={
+g9:{
+ name:"G9 / M9 / S8",
+ profiles:{
+  "1 Hero":{max:462000,g9:17400},
+  "1 Captain":{max:224100,g9:8400},
+  "3 Captain":{max:586075,g9:22300},
+  "Hero + 3 Captain":{max:1009735,g9:38300},
+  "3 Captain (incl Aydae)":{max:498909,g9:17600},
+  "Hero + 3 Captain (incl Aydae)":{max:1009735,g9:35700}
+ },
+ factors:{aydae:1.22,troop:1.81,beast:1.79,spec:1.01,cat1:1.26,cat3:1.21,cat4:1.20},
+ calc(p, f){
+  const x=p.g9, t=f.troop, b=f.beast, s=f.spec;
+  const g9={Ranged:x,Mounted:(x+20)/2,Flying:(x+40)/20,Melee:x+60};
+  const g8r=g9.Melee*t, g8={Ranged:g8r,Mounted:(g8r+20)/2,Flying:(g8r+40)/20,Melee:g8r+60};
+  const aydaeActive=p.profileName && p.profileName.includes("incl Aydae");
+  const s8r=g8.Melee*s*(aydaeActive?f.aydae:1);
+  const s8Melee=s8r+40;
+  const s8={Ranged:s8r,Mounted:(s8r+20)/2,Flying:(s8Melee*t-60)/(20*b),Melee:s8Melee};
+  const g7r=s8.Melee*t/(aydaeActive?f.aydae:1), g7={Ranged:g7r,Mounted:(g7r+20)/2,Flying:f.g7f?g7r+40:0,Melee:f.g7m?g7r+60:0};
+  // M8/M9/M7 follow the Excel sheet exactly:
+  // M8 = G9 Ranged / 131, M9 = M8 / 1.91, M7 = M8 * 2.
+  // M9 is its own troop type and must NOT be multiplied by Beast factor.
+  const m8=x/131, m9=m8/1.91, m7=m8*2;
+  let catFactor=p.profileCat||f.cat1;
+  if(p.profileName==="3 Captain") catFactor=f.cat3;
+  if(p.profileName==="Hero + 3 Captain" || p.profileName.includes("Hero + 3")) catFactor=f.cat4;
+  if(p.profileName.includes("incl Aydae")) catFactor=p.profileName.startsWith("3")?f.cat3:f.cat4;
+  const e9=f.e9?s8.Flying*catFactor:0, e8=f.e8?e9*t:0, merc=m8*25;
+  const items=[
+   ["E9","Catapult",e9,10],["E8","Catapult",e8,10],
+   ["M9","",m9,1],["G7","Ranged",g7.Ranged,1],["G7","Mounted",g7.Mounted,2],["G7","Flying",g7.Flying,20],["G7","Melee",g7.Melee,1],
+   ["S8","Ranged",s8.Ranged,1],["S8","Mounted",s8.Mounted,2],["S8","Flying",s8.Flying,20],["S8","Melee",s8.Melee,1],
+   ["G8","Ranged",g8.Ranged,1],["G8","Mounted",g8.Mounted,2],["G8","Flying",g8.Flying,20],["G8","Melee",g8.Melee,1],
+   ["G9","Ranged",g9.Ranged,1],["G9","Mounted",g9.Mounted,2],["G9","Flying",g9.Flying,20],["G9","Melee",g9.Melee,1],
+   ["M8","",m8,1],["M7","",m7,1],["Epic merc","",merc,10]
+  ];
+  return {items:items.filter(i=>Number.isFinite(i[2]) && i[2]>0), raw:{g9,g8,s8,g7,m8,m9,m7,e9,e8,merc}};
+ }
+},
+t9:{
+ name:"T9",
+ profiles:{
+  "1 Hero":{max:470793,g9:19750},
+  "1 Captain":{max:310000,g9:13000},
+  "3 Captain":{max:930205,g9:39180},
+  "Hero + 3 Captain":{max:1507000,g9:60800},
+  "3 Captain (incl Aydae)":{max:677597,g9:25400},
+  "Hero + 3 Captain (incl Aydae)":{max:1420000,g9:55000}
+ },
+ factors:{aydae:1.22,troop:1.81,beast:1.79,spec:1.01,cat1:1.19,cat3:1.16,cat4:1.20},
+ calc(p,f){
+  const x=p.g9,t=f.troop,b=f.beast,s=f.spec;
+  const g9={Ranged:x,Mounted:(x+20)/2,Flying:(x+40)/20,Melee:x+60};
+  const aydaeActive=p.profileName && p.profileName.includes("incl Aydae");
+  const s9r=g9.Melee*s*(aydaeActive?f.aydae:1);
+  const g8r=g9.Melee*t, g8={Ranged:g8r,Mounted:(g8r+20)/2,Flying:(g8r+40)/20,Melee:g8r+60};
+  const s9={Ranged:s9r,Mounted:(s9r+20)/2,Flying:(g8.Ranged-60)/(20*b),Melee:s9r+40};
+  const s8r=s9.Melee*t;
+  const s8Melee=s8r+40;
+  const s8={Ranged:s8r,Mounted:(s8r+20)/2,Flying:(s8Melee*t-60)/(20*b),Melee:s8Melee};
+  const m8=x/131,m9=m8/1.91,m7=m8*2;
+  let catFactor=f.cat1;
+  if(p.profileName==="3 Captain")catFactor=f.cat3;
+  if(p.profileName.includes("Hero + 3"))catFactor=f.cat4;
+  if(p.profileName.includes("incl Aydae"))catFactor=p.profileName.startsWith("3")?f.cat3:f.cat4;
+  const e9=f.e9?s8.Flying*catFactor:0,e8=f.e8?e9*t:0;
+  const items=[
+   ["E9","Catapult",e9,10],["E8","Catapult",e8,10],
+   ["M9","",m9,1],
+   ["S8","Ranged",s8.Ranged,1],["S8","Mounted",s8.Mounted,2],["S8","Flying",s8.Flying,20],["S8","Melee",s8.Melee,1],
+   ["G8","Ranged",g8.Ranged,1],["G8","Mounted",g8.Mounted,2],["G8","Flying",g8.Flying,20],["G8","Melee",g8.Melee,1],
+   ["G9","Ranged",g9.Ranged,1],["G9","Mounted",g9.Mounted,2],["G9","Flying",g9.Flying,20],["G9","Melee",g9.Melee,1],
+   ["S9","Ranged",s9.Ranged,1],["S9","Mounted",s9.Mounted,2],["S9","Flying",s9.Flying,20],["S9","Melee",s9.Melee,1],
+   ["M8","",m8,1],["M7","",m7,1],["Epic merc","",m8*25,10]
+  ];
+  return {items:items.filter(i=>Number.isFinite(i[2]) && i[2]>0),raw:{g9,g8,s8,s9,m8,m9,m7,e9,e8}};
+ }
+}
+};
+
+let modelKey="t9", state={profile:"1 Captain"};
+const $=id=>document.getElementById(id);
+function fmt(n){return Math.round(Number(n)).toLocaleString("sv-SE")}
+function fmt2(n){return Math.round(Number(n)).toLocaleString("sv-SE")}
+function init(){
+ const m=models[modelKey]; const names=Object.keys(m.profiles); $("profile").innerHTML=names.map(n=>`<option>${n}</option>`).join("");
+ $("profile").value=state.profile||names[0]; applyProfile(true); setInputs(); updateAydaeVisibility();
+}
+function applyProfile(force=false){
+ const m=models[modelKey], name=$("profile").value, p=m.profiles[name];
+ state.profile=name;
+ if(force){$("maxLeadership").value=p.max}
+}
+function setInputs(){
+ const f=models[modelKey].factors;
+ $("aydae").value=f.aydae;$("troop").value=f.troop;$("beast").value=f.beast;$("spec").value=f.spec;
+ $("cat1").value=f.cat1;$("cat3").value=f.cat3;$("cat4").value=f.cat4;
+ $("e9").checked=true;$("e8").checked=false;$("g7f").checked=false;$("g7m").checked=false;
+ findMaximumG9Ranged();
+}
+function updateAydaeVisibility(){
+  const name=$("profile").value || "";
+  const show = name === "3 Captain (incl Aydae)" || name === "Hero + 3 Captain (incl Aydae)";
+  $("aydaeSection").style.display = show ? "block" : "none";
+}
+function factors(){
+ return {aydae:+$("aydae").value,troop:+$("troop").value,beast:+$("beast").value,spec:+$("spec").value,
+ cat1:+$("cat1").value,cat3:+$("cat3").value,cat4:+$("cat4").value,e9:$("e9").checked,e8:$("e8").checked,
+ g7f:$("g7f").checked,g7m:$("g7m").checked};
+}
+function leadershipUsed(result){
+  let used=0;
+  result.items.forEach(i=>{
+    const noLeadership = i[0] === "M9" || i[0] === "M8" || i[0] === "M7" || i[0] === "Epic merc";
+    if(!noLeadership) used += Math.round(i[2]) * i[3];
+  });
+  return used;
+}
+function findMaximumG9Ranged(){
+  const m=models[modelKey], profileName=$("profile").value;
+  const p={...m.profiles[profileName],profileName};
+  const f=factors();
+  const max=+$("maxLeadership").value;
+  if(!Number.isFinite(max) || max < 0){
+    alert("Enter a valid Leadership Max value.");
+    return;
+  }
+  // Leadership Used increases with G9 Ranged, so an upper-bound search followed by binary search
+  // finds the highest whole-number G9 Ranged value that fits the available Leadership.
+  let lo=0, hi=Math.max(1, Math.round(p.g9));
+  const fits=g=>leadershipUsed(m.calc({...p,g9:g},f)) <= max;
+  while(fits(hi) && hi < 1000000000) hi*=2;
+  while(lo < hi){
+    const mid=Math.floor((lo + hi + 1)/2);
+    if(fits(mid)) lo=mid; else hi=mid-1;
+  }
+  p.g9=lo;
+  const result=m.calc(p,f);
+  state.lastCalculation={modelKey,profileName,g9:lo,result};
+  render(result, lo);
+}
+function calculateFromSelectedG9(){ findMaximumG9Ranged(); }
+function render(calculatedResult=null, calculatedG9=null){
+ const m=models[modelKey], profileName=$("profile").value, p={...m.profiles[profileName],profileName};
+ const g9Value = calculatedG9 ?? state.lastCalculation?.g9 ?? p.g9;
+ p.g9 = +g9Value;
+ const result=calculatedResult || m.calc(p,factors());
+ const used=leadershipUsed(result);
+ const max=+$("maxLeadership").value,left=max-used,pct=max?used/max*100:0;
+ $("statMax").textContent=fmt(max);$("statUsed").textContent=fmt(used);$("statLeft").textContent=fmt(left);
+ $("statUsed").className="v "+(left<0?"over":left<max*.03?"warning":"ok");
+ $("bar").style.width=Math.min(100,Math.max(0,pct))+"%";
+ const order = modelKey === "t9" ? [
+   ["M9",""],["M8",""],["M7",""],
+   ["G9","Flying"],["S9","Flying"],["G8","Flying"],["S8","Flying"],
+   ["E9","Catapult"],["E8","Catapult"],
+   ["G9","Mounted"],["S9","Mounted"],["G8","Mounted"],["S8","Mounted"],
+   ["G9","Ranged"],["G9","Melee"],["S9","Ranged"],["S9","Melee"],
+   ["G8","Ranged"],["G8","Melee"],["S8","Ranged"],["S8","Melee"],
+   ["Epic merc",""]
+ ] : [
+   ["M9",""],["M8",""],["M7",""],
+   ["G9","Flying"],["S8","Flying"],["G8","Flying"],
+   ["E9","Catapult"],["E8","Catapult"],
+   ["G9","Mounted"],["S8","Mounted"],["G8","Mounted"],
+   ["G9","Ranged"],["G9","Melee"],["G8","Ranged"],["G8","Melee"],["S8","Ranged"],["S8","Melee"],
+   ["G7","Flying"],["G7","Melee"],["G7","Ranged"],["G7","Mounted"],
+   ["Epic merc",""]
+ ];
+ const orderedItems = [];
+ for(const [troop,type] of order){
+   const found = result.items.find(i=>i[0]===troop && i[1]===type);
+   if(found) orderedItems.push(found);
+ }
+ // Fallback: retain any future/optional rows not explicitly listed above.
+ for(const item of result.items){
+   if(!orderedItems.includes(item)) orderedItems.push(item);
+ }
+ const rows=$("rows");rows.innerHTML="";
+ orderedItems.forEach((i,idx)=>{
+   const tr=document.createElement("tr");
+   const displayType = (i[0] === "M9" || i[0] === "M8" || i[0] === "M7") ? "Monster" : i[1];
+   const troopLabel = displayType ? `${i[0]} / <span class="type">${displayType}</span>` : i[0];
+   tr.innerHTML=`<td class="group">${troopLabel}</td><td class="num">${fmt2(i[2])}</td>`;
+   rows.appendChild(tr);
+ });
+
+}
+function switchModel(k){
+ modelKey=k; state.profile=null; $("profile").innerHTML="";
+ init();
+ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.model===k));
+ document.querySelectorAll(".g7-option").forEach(el=>el.classList.toggle("hidden",k==="t9"));
+ updateAydaeVisibility();
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchModel(b.dataset.model));
+$("profile").onchange=()=>{applyProfile(true);updateAydaeVisibility();findMaximumG9Ranged()};
+["maxLeadership","aydae","troop","beast","spec","cat1","cat3","cat4"].forEach(id=>$(id).oninput=findMaximumG9Ranged);
+["e9","e8","g7f","g7m"].forEach(id=>$(id).onchange=findMaximumG9Ranged);
+$("resetFactors").onclick=()=>{const f=models[modelKey].factors;["aydae","troop","beast","spec"].forEach(id=>$(id).value=f[id]);$("cat1").value=f.cat1;$("cat3").value=f.cat3;$("cat4").value=f.cat4;findMaximumG9Ranged()};
+$("resetAll").onclick=()=>init();
+init();
+ document.querySelectorAll(".g7-option").forEach(el=>el.classList.toggle("hidden",modelKey==="t9"));
+ updateAydaeVisibility();
+</script>
+</body>
+</html>
