@@ -36,8 +36,8 @@ footer{margin-top:16px;color:#657487;font-size:11px}
 <div class="instructions">Choose either G9/M9/S8 or T9. Then choose number of Hero/Captains. Then input your Max leadership.</div>
 
 <div class="tabs">
-  <button class="tab active" data-model="g9">G9 / M9 / S8</button>
-  <button class="tab" data-model="t9">T9</button>
+  <button class="tab active" data-model="t9">T9</button>
+  <button class="tab" data-model="g9">G9 / M9 / S8</button>
 </div>
 
 <div class="grid">
@@ -125,7 +125,7 @@ g9:{
   const s8r=g8.Melee*s*(aydaeActive?f.aydae:1);
   const s8Melee=s8r+40;
   const s8={Ranged:s8r,Mounted:(s8r+20)/2,Flying:(s8Melee*t-60)/(20*b),Melee:s8Melee};
-  const g7r=s8.Melee*t/(aydaeActive?f.aydae:1), g7={Ranged:g7r,Mounted:(g7r+20)/2,Flying:f.g7f?g7r+40:0,Melee:f.g7m?g7r+60:0};
+  const g7r=s8.Melee*t/(aydaeActive?f.aydae:1), g7={Ranged:g7r,Mounted:(g7r+20)/2,Flying:f.g7f?(g7r+40)/20:0,Melee:f.g7m?g7r+60:0};
   // M8/M9/M7 follow the Excel sheet exactly:
   // M8 = G9 Ranged / 131, M9 = M8 / 1.91, M7 = M8 * 2.
   // M9 is its own troop type and must NOT be multiplied by Beast factor.
@@ -188,12 +188,14 @@ t9:{
 };
 
 let modelKey="t9", state={profile:"1 Captain"};
+const defaultProfile={g9:"1 Captain",t9:"1 Captain"};
 const $=id=>document.getElementById(id);
 function fmt(n){return Math.round(Number(n)).toLocaleString("sv-SE")}
 function fmt2(n){return Math.round(Number(n)).toLocaleString("sv-SE")}
 function init(){
  const m=models[modelKey]; const names=Object.keys(m.profiles); $("profile").innerHTML=names.map(n=>`<option>${n}</option>`).join("");
- $("profile").value=state.profile||names[0]; applyProfile(true); setInputs(); updateAydaeVisibility();
+ const desired=state.profile || defaultProfile[modelKey] || names[0];
+ $("profile").value=names.includes(desired)?desired:names[0]; applyProfile(true); setInputs(); updateAydaeVisibility();
 }
 function applyProfile(force=false){
  const m=models[modelKey], name=$("profile").value, p=m.profiles[name];
@@ -260,21 +262,21 @@ function render(calculatedResult=null, calculatedG9=null){
  $("statUsed").className="v "+(left<0?"over":left<max*.03?"warning":"ok");
  $("bar").style.width=Math.min(100,Math.max(0,pct))+"%";
  const order = modelKey === "t9" ? [
+   ["Epic merc",""],
    ["M9",""],["M8",""],["M7",""],
    ["G9","Flying"],["S9","Flying"],["G8","Flying"],["S8","Flying"],
    ["E9","Catapult"],["E8","Catapult"],
    ["G9","Mounted"],["S9","Mounted"],["G8","Mounted"],["S8","Mounted"],
    ["G9","Ranged"],["G9","Melee"],["S9","Ranged"],["S9","Melee"],
-   ["G8","Ranged"],["G8","Melee"],["S8","Ranged"],["S8","Melee"],
-   ["Epic merc",""]
+   ["G8","Ranged"],["G8","Melee"],["S8","Ranged"],["S8","Melee"]
  ] : [
+   ["Epic merc",""],
    ["M9",""],["M8",""],["M7",""],
    ["G9","Flying"],["S8","Flying"],["G8","Flying"],
    ["E9","Catapult"],["E8","Catapult"],
    ["G9","Mounted"],["S8","Mounted"],["G8","Mounted"],
    ["G9","Ranged"],["G9","Melee"],["G8","Ranged"],["G8","Melee"],["S8","Ranged"],["S8","Melee"],
-   ["G7","Flying"],["G7","Melee"],["G7","Ranged"],["G7","Mounted"],
-   ["Epic merc",""]
+   ["G7","Flying"],["G7","Melee"],["G7","Ranged"],["G7","Mounted"]
  ];
  const orderedItems = [];
  for(const [troop,type] of order){
@@ -296,7 +298,7 @@ function render(calculatedResult=null, calculatedG9=null){
 
 }
 function switchModel(k){
- modelKey=k; state.profile=null; $("profile").innerHTML="";
+ modelKey=k; state.profile=defaultProfile[k] || null; $("profile").innerHTML="";
  init();
  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.model===k));
  document.querySelectorAll(".g7-option").forEach(el=>el.classList.toggle("hidden",k==="t9"));
