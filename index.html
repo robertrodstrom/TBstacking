@@ -127,9 +127,9 @@ g9:{
   const s8={Ranged:s8r,Mounted:(s8r+20)/2,Flying:(s8Melee*t-60)/(20*b),Melee:s8Melee};
   const g7r=s8.Melee*t/(aydaeActive?f.aydae:1), g7={Ranged:g7r,Mounted:(g7r+20)/2,Flying:f.g7f?(g7r+40)/20:0,Melee:f.g7m?g7r+60:0};
   // M8/M9/M7 follow the Excel sheet exactly:
-  // M8 = G9 Ranged / 131, M9 = M8 / 1.91, M7 = M8 * 2.
+  // M8 = G9 Ranged / 131, M9 = M8 / 1.85, M7 = M8 * 2.22.
   // M9 is its own troop type and must NOT be multiplied by Beast factor.
-  const m8=x/131, m9=m8/1.91, m7=m8*2;
+  const m8=x/131, m9=m8/1.85, m7=m8*2.22;
   let catFactor=p.profileCat||f.cat1;
   if(p.profileName==="3 Captain") catFactor=f.cat3;
   if(p.profileName==="Hero + 3 Captain" || p.profileName.includes("Hero + 3")) catFactor=f.cat4;
@@ -156,7 +156,7 @@ t9:{
   "3 Captain (incl Aydae)":{max:677597,g9:25400},
   "Hero + 3 Captain (incl Aydae)":{max:1420000,g9:55000}
  },
- factors:{aydae:1.22,troop:1.81,beast:1.79,spec:1.01,cat1:1.19,cat3:1.16,cat4:1.20},
+ factors:{aydae:1.22,troop:1.81,beast:1.79,spec:1.01,cat1:1.19,cat3:1.20,cat4:1.20},
  calc(p,f){
   const x=p.g9,t=f.troop,b=f.beast,s=f.spec;
   const g9={Ranged:x,Mounted:(x+20)/2,Flying:(x+40)/20,Melee:x+60};
@@ -167,7 +167,7 @@ t9:{
   const s8r=s9.Melee*t;
   const s8Melee=s8r+40;
   const s8={Ranged:s8r,Mounted:(s8r+20)/2,Flying:(s8Melee*t-60)/(20*b),Melee:s8Melee};
-  const m8=x/131,m9=m8/1.91,m7=m8*2;
+  const m8=x/131,m9=m8/1.85,m7=m8*2.22;
   let catFactor=f.cat1;
   if(p.profileName==="3 Captain")catFactor=f.cat3;
   if(p.profileName.includes("Hero + 3"))catFactor=f.cat4;
@@ -272,9 +272,9 @@ function render(calculatedResult=null, calculatedG9=null){
  ] : [
    ["Epic merc",""],
    ["M9",""],["M8",""],["M7",""],
-   ["G9","Flying"],["S8","Flying"],["G8","Flying"],
+   ["G9","Flying"],["G8","Flying"],["S8","Flying"],
    ["E9","Catapult"],["E8","Catapult"],
-   ["G9","Mounted"],["S8","Mounted"],["G8","Mounted"],
+   ["G9","Mounted"],["G8","Mounted"],["S8","Mounted"],
    ["G9","Ranged"],["G9","Melee"],["G8","Ranged"],["G8","Melee"],["S8","Ranged"],["S8","Melee"],
    ["G7","Flying"],["G7","Melee"],["G7","Ranged"],["G7","Mounted"]
  ];
